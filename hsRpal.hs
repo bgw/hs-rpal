@@ -5,6 +5,7 @@ import System.Console.GetOpt
 import Control.Monad
 
 import Lexer
+import Parser
 
 -- Define a record for all the arguments
 data Opt = Opt { optVersion :: Bool
@@ -68,4 +69,4 @@ optProcess opt nopt = do
         when (optAst opt)     (putStr $ generateAst source)
 
 generateAst :: String -> String
-generateAst source = unlines $ fmap show $ getTokens source
+generateAst source = show $ AstDummy
