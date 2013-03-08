@@ -1,9 +1,7 @@
 module Main (main) where
 
 import System.Environment
-import System.Exit
 import System.Console.GetOpt
-import Data.Maybe
 import Control.Monad
 
 import Lexer

@@ -16,8 +16,6 @@ module Lexer ( Token(..)
              ) where
 
 import Text.Regex.TDFA -- Text.Regex.Posix sucks
-import Text.Regex.TDFA.Common
--- import Text.Regex.Posix
 import Data.Maybe
 
 data Token
