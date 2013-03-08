@@ -5,7 +5,15 @@
 --
 -- We use POSIX regular expressions because regex is awesome. Sure it slows down
 -- the lexer, but this isn't part of the critical path, so who cares?
-module Lexer (Token(..), getToken, getTokens) where
+module Lexer ( Token(..)
+             , getToken
+             , getTokens
+             , isTokenIdentifier
+             , isTokenInteger
+             , isTokenOperator
+             , isTokenString
+             , isTokenPunction
+             ) where
 
 import Text.Regex.TDFA -- Text.Regex.Posix sucks
 import Text.Regex.TDFA.Common
@@ -21,7 +29,7 @@ data Token
     | TokenDelete String  -- Temporary placeholder, gets removed in the end
     | TokenComment String -- Discarded now, treated separately in case we might
                           -- ever want to use this in the AST later
-    deriving Show
+    deriving (Show, Eq)
 
 -- A given matcher should consume the first token it sees in the string, and
 -- then stop. Getting all the tokens can be done recursively (and lazily).
@@ -38,6 +46,29 @@ tokenMatchers = [ (mr "[A-Za-z][A-Za-z0-9_]*", TokenIdentifier)
                 , (mr "//.*", TokenComment)
                 ]
                 where mr m = makeRegex $ "\\`" ++ m
+
+-- Convenience functions for checking token type
+-- This is pretty nasty, but AFAIK, this type of pattern matching is the only
+-- way of doing it
+isTokenIdentifier :: Token -> Bool
+isTokenIdentifier (TokenIdentifier _) = True
+isTokenIdentifier _                   = False
+
+isTokenInteger :: Token -> Bool
+isTokenInteger (TokenInteger _)       = True
+isTokenInteger _                      = False
+
+isTokenOperator :: Token -> Bool
+isTokenOperator (TokenOperator _)     = True
+isTokenOperator _                     = False
+
+isTokenString :: Token -> Bool
+isTokenString (TokenString _)         = True
+isTokenString _                       = False
+
+isTokenPunction :: Token -> Bool
+isTokenPunction (TokenPunction _)     = True
+isTokenPunction _                     = False
 
 -- These terminals should be discarded by getToken
 isIgnored :: Token -> Bool
