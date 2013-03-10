@@ -69,4 +69,4 @@ optProcess opt nopt = do
         when (optAst opt)     (putStr $ generateAst source)
 
 generateAst :: String -> String
-generateAst source = show $ AstDummy
+generateAst source = show $ parse source
