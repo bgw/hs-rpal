@@ -6,4 +6,4 @@ build:
 	ghc -Wall hsRpal.hs -o hsRpal
 
 clean:
-	-rm -f $(wildcard *.o *.hi) hsRpal
+	-rm -f $(wildcard *.o *.hi */*.o */*.hi) hsRpal
