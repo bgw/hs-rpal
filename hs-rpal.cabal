@@ -1,0 +1,13 @@
+Name:               hs-rpal
+Version:            0.0.1
+Description:        An RPAL interpreter written in Haskell
+License:            GPL
+License-File:       LICENSE
+Author:             Benjamin Woodruff
+Maintainer:         benjaminwoodruff@ufl.edu
+Build-Type:         Simple
+Cabal-Version:      >=1.2 
+
+Executable hs-rpal
+    Main-Is:        hsRpal.hs
+    Build-Depends:  base >= 4.0 && < 5.0, regex-tdfa >= 1.0

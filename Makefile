@@ -1,9 +1,14 @@
-COMPILER = ghc
+# We're required to have a Makefile for COP5555, so this is just a stub of one
+# that calls cabal
 
 all: clean build
 
 build:
-	ghc -Wall hsRpal.hs -o hsRpal
+	cabal configure
+	cabal build
+
+install:
+	cabal install
 
 clean:
-	-rm -f $(wildcard *.o *.hi */*.o */*.hi) hsRpal
+	cabal clean
