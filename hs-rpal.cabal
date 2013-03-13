@@ -11,4 +11,4 @@ Cabal-Version:      >=1.2
 Executable hs-rpal
     Main-Is:        hsRpal.hs
     Build-Depends:  base >= 4.0 && < 5.0, regex-tdfa >= 1.0
-    Ghc-Options:    -Wall
+    Ghc-Options:    -Wall -O2
