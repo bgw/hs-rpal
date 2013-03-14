@@ -59,14 +59,15 @@ data Ast
 instance Show Ast where
     show a =
         -- Recursively print all children with '.' characters for indentation
-        unlines $ (showName a) : (         -- prepend current name and rejoin
+        unlines $ (showName a ++ " ") : (  -- prepend current name and rejoin
             map ('.':) $                   -- prefix each line with '.'
                 lines $ concat $           -- split up each line
                     map show (children a)  -- call recursively
         )
 
 -- Our type names are different from those printed by Bermudez's parser, so we
--- have to convert them (ugh)
+-- have to convert them (ugh). Also, the example parser prints a space at the
+-- end of every line (WTF?) which we have to replicate to match.
 showName :: Ast -> String
 
 -- Expressions

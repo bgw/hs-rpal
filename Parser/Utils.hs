@@ -8,6 +8,8 @@ module Parser.Utils ( Parser(..)
                     , advance
                     , many
                     , manySep
+                    , leftRecursive
+                    , rightRecursive
                     , notFound
                     ) where
 
@@ -26,7 +28,6 @@ type ParserConsumed = Parser [Token]
 instance Monad Parser where
     return = Parser
     (Parser tokens) >>= subtreeParser = subtreeParser tokens
-
 
 -- Discard a specific token
 consume :: [Token] -> Token -> ParserConsumed
@@ -74,6 +75,33 @@ manySep tokens parsingFunc separator = do
         -- Stop when the separator is no longer matched or on EOF
         sepCond (t:_) = t /= separator -- the separator is no longer matched
         sepCond _     = True           -- we hit an EOF
+
+
+-- For simple left-recursive grammars such as
+-- Ta -> Ta 'aug' Tc
+--    -> Tc
+-- It first generates a flat list of the subtrees, and then forms a recursive
+-- tree with the Ast constructor
+leftRecursive :: [Token] -> ([Token] -> ParserResult) -> Token
+                 -> (Ast -> Ast -> Ast) -> ParserResult
+leftRecursive tokens parsingFunc separator astType = do
+    (aa, ta) <- manySep tokens parsingFunc separator
+    return (buildTree aa, ta)
+    where
+        buildTree subList =
+            if length subList == 1 then head subList
+            else astType (buildTree $ init subList) (last subList)
+
+
+rightRecursive :: [Token] -> ([Token] -> ParserResult) -> Token
+                  -> (Ast -> Ast -> Ast) -> ParserResult
+rightRecursive tokens parsingFunc separator astType = do
+    (aa, ta) <- manySep tokens parsingFunc separator
+    return (buildTree aa, ta)
+    where
+        buildTree subList =
+            if length subList == 1 then head subList
+            else astType (head subList) (buildTree $ tail subList)
 
 
 -- Generate error handler when a matcher fails

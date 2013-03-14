@@ -19,7 +19,8 @@ import Text.Regex.TDFA -- Text.Regex.Posix sucks
 import Data.Maybe
 
 data Token
-    = TokenIdentifier String
+    = TokenKeyword String
+    | TokenIdentifier String
     | TokenInteger Integer
     | TokenOperator String
     | TokenString String
@@ -44,6 +45,43 @@ tokenMatchers = [ (mr "[A-Za-z][A-Za-z0-9_]*", TokenIdentifier)
                 , (mr "//.*", TokenComment)
                 ]
                 where mr m = makeRegex $ "\\`" ++ m
+
+-- Get applied in sequence, and can perform simple one-to-one transformations on
+-- tokens
+tokenTransformers :: [Token -> Token]
+tokenTransformers = [ transformKeyword ]
+
+transformToken :: Token -> Token
+transformToken token = foldr ($) token tokenTransformers
+
+-- Certain `TokenIdentifier`s should be be treated as keywords
+transformKeyword :: Token -> Token
+transformKeyword (TokenIdentifier name) =
+    if isKeyword then TokenKeyword name else TokenIdentifier name
+    where
+        isKeyword = case name of
+            "let"    -> True
+            "in"     -> True
+            "fn"     -> True
+            "aug"    -> True
+            "or"     -> True
+            "gr"     -> True
+            "ge"     -> True
+            "ls"     -> True
+            "le"     -> True
+            "eq"     -> True
+            "ne"     -> True
+            "not"    -> True
+            "where"  -> True
+            "within" -> True
+            "and"    -> True
+            "rec"    -> True
+            "true"   -> True
+            "false"  -> True
+            "nil"    -> True
+            "dummy"  -> True
+            _        -> False
+transformKeyword token = token
 
 -- Convenience functions for checking token type
 -- This is pretty nasty, but AFAIK, this type of pattern matching is the only
@@ -93,6 +131,6 @@ getTokenPartial :: [(Regex, String -> Token)] -> String -> (Token, String)
 getTokenPartial matchers source =
     let (m, t) = head matchers in
         if match m source then 
-            (t (match m source :: String),
+            (transformToken $ t (match m source :: String),
             drop (length (match m source :: String)) source)
         else getTokenPartial (tail matchers) (source)
