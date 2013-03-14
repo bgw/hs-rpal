@@ -8,11 +8,6 @@
 module Lexer ( Token(..)
              , getToken
              , getTokens
-             , isTokenIdentifier
-             , isTokenInteger
-             , isTokenOperator
-             , isTokenString
-             , isTokenPunction
              ) where
 
 import Text.Regex.TDFA -- Text.Regex.Posix sucks
@@ -82,29 +77,6 @@ transformKeyword (TokenIdentifier name) =
             "dummy"  -> True
             _        -> False
 transformKeyword token = token
-
--- Convenience functions for checking token type
--- This is pretty nasty, but AFAIK, this type of pattern matching is the only
--- way of doing it
-isTokenIdentifier :: Token -> Bool
-isTokenIdentifier (TokenIdentifier _) = True
-isTokenIdentifier _                   = False
-
-isTokenInteger :: Token -> Bool
-isTokenInteger (TokenInteger _)       = True
-isTokenInteger _                      = False
-
-isTokenOperator :: Token -> Bool
-isTokenOperator (TokenOperator _)     = True
-isTokenOperator _                     = False
-
-isTokenString :: Token -> Bool
-isTokenString (TokenString _)         = True
-isTokenString _                       = False
-
-isTokenPunction :: Token -> Bool
-isTokenPunction (TokenPunction _)     = True
-isTokenPunction _                     = False
 
 -- These terminals should be discarded by getToken
 isIgnored :: Token -> Bool
