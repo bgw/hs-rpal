@@ -1,5 +1,5 @@
 name:               hs-rpal
-version:            0.0.1
+version:            0.0.2
 description:        An RPAL interpreter written in Haskell
 homepage:           https://github.com/pipeep/hs-rpal
 bug-reports:        https://github.com/PiPeep/hs-rpal/issues

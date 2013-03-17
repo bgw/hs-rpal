@@ -1,26 +1,17 @@
+-- This is the primary command line argument parser frontend. It takes GNU-style
+-- arguments and has some error handling.
+
 module Main (main) where
 
 import System.Environment
 import System.Console.GetOpt
 import Control.Monad
 
-import Lexer
-import Parser
+import OptionHandler
 
--- Define a record for all the arguments
-data Opt = Opt { optVersion :: Bool
-               , optAst :: Bool
-               , optLex :: Bool
-               , optListing :: Bool
-               }
-
--- Define the default settings
-optDefaults :: Opt
-optDefaults = Opt { optVersion = False
-                  , optAst = False
-                  , optLex = False
-                  , optListing = False
-                  }
+-- Printed whenever there is an error or when `-h` is called
+optUsageInfo :: String
+optUsageInfo = usageInfo "Usage: hs-rpal [OPTION...] files..." optDescr
 
 -- Each description is a function that modifies an Opt record. Selected flags
 -- get applied in order.
@@ -40,33 +31,23 @@ optDescr =
       "Print the Abstract Syntax Tree to stdout"
     ]
 
--- Define our argument parser using getOpt
-optParse :: [String] -> IO (Opt, [String])
-optParse argv =
+-- Take sequential arguments and pack them into an Opt record. Called implicitly
+-- by optParse.
+optNooptParse :: Opt -> [String] -> Opt
+optNooptParse baseOpt argv =
     case getOpt Permute optDescr argv of
-        (options, nonOptions, []  ) -> -- No errors
-            -- Start with the default options, and progressively apply modifiers
-            return (foldr ($) optDefaults options, nonOptions)
-        (_      , _         , errs) -> -- Errors
-            -- Print the error and the program usage
-            ioError (userError (concat errs ++ usageInfo header optDescr))
-    where header = "Usage: hsRpal [OPTION...] files..."
+        (_, [file], []  ) -> baseOpt { optFile = Just file }
+        (_, [],     []  ) -> baseOpt
+        (_, _,      errs) -> error $ concat errs ++ optUsageInfo
+
+-- Define our argument parser using getOpt
+optParse :: Opt -> [String] -> Opt
+optParse baseOpt argv =
+    case getOpt Permute optDescr argv of
+        -- Start with the default options, and progressively apply modifiers
+        (options, _, []  ) -> foldr ($) (optNooptParse baseOpt argv) options
+        (_,       _, errs) -> error $ concat errs ++ optUsageInfo
 
 main :: IO ()
-main = do
-    (options, nonOptions) <- getArgs >>= optParse 
-    optProcess options nonOptions
+main = (liftM $ optParse optDefaults) getArgs >>= optProcess
 
--- For each argument, evaluate it and execute subtasks
-optProcess :: Opt -> [String] -> IO ()
-optProcess opt nopt = do
-    source <-
-        if length nopt > 0 then readFile (head nopt) -- From file
-        else getContents                             -- From stdin
-    if optVersion opt then putStrLn "hsRpal v0.0.1-dev" else do
-        when (optListing opt) (putStr source)
-        when (optLex opt)     (putStr $ unlines $ fmap show $ getTokens source)
-        when (optAst opt)     (putStr $ generateAst source)
-
-generateAst :: String -> String
-generateAst source = show $ parse source
