@@ -27,6 +27,7 @@ data Opt = Opt { optVersion :: Bool
                , optAst :: Bool
                , optLex :: Bool
                , optListing :: Bool
+               , optQuiet :: Bool
                , optFile :: Maybe String
                }
 
@@ -36,6 +37,7 @@ optDefaults = Opt { optVersion = False
                   , optAst = False
                   , optLex = False
                   , optListing = False
+                  , optQuiet = False
                   , optFile = Nothing
                   }
 

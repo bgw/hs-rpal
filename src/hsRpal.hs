@@ -11,7 +11,7 @@ import OptionHandler
 
 -- Printed whenever there is an error or when `-h` is called
 optUsageInfo :: String
-optUsageInfo = usageInfo "Usage: hs-rpal [OPTION...] files..." optDescr
+optUsageInfo = usageInfo "Usage: hs-rpal [OPTION...] [FILE]" optDescr
 
 -- Each description is a function that modifies an Opt record. Selected flags
 -- get applied in order.
@@ -29,6 +29,9 @@ optDescr =
     , Option ['a'] ["ast"]
         (NoArg $ \o -> o { optAst = True })
       "Print the Abstract Syntax Tree to stdout"
+    , Option ['q'] ["no-out", "quiet"]
+        (NoArg $ \o -> o { optQuiet = True })
+      "Skip program evaluation (useful with --ast, --lex, etc)"
     ]
 
 -- Take sequential arguments and pack them into an Opt record. Called implicitly
