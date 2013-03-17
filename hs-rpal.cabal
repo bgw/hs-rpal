@@ -1,5 +1,5 @@
 name:               hs-rpal
-version:            0.0.2
+version:            0.1.0
 description:        An RPAL interpreter written in Haskell
 homepage:           https://github.com/pipeep/hs-rpal
 bug-reports:        https://github.com/PiPeep/hs-rpal/issues
@@ -15,7 +15,7 @@ executable hs-rpal
     main-is:        hsRpal.hs
     hs-source-dirs: src
     build-depends:  base >= 4.0 && < 5.0, regex-tdfa >= 1.0
-    ghc-options:    -Wall -O2
+    ghc-options:    -Wall -O2 -static
 
 -- This is what should be turned in for COP5555. Instead of using gnu-style
 -- --double-dash command line arguments, it uses -single-dash ones. It is also
