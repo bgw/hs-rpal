@@ -30,14 +30,14 @@ data Token
 tokenMatchers :: [(Regex, String -> Token)]
 tokenMatchers = [ (mr "[A-Za-z][A-Za-z0-9_]*", TokenIdentifier)
                 , (mr "[0-9]+", \s -> TokenInteger $ read s)
+                -- Stolen from http://stackoverflow.com/a/1016356/130598
+                , (mr "'(\\\\.|[^\'])*'", TokenString)
+                , (mr "//.*", TokenComment) -- Must be processed before operator
                 -- You have to be really careful with character ordering in the
                 -- regex, so that `]`, `"`, and `-` get treated properly
                 , (mr "[][+*<>&.@/:=~|$!#%^_{}\"`?-]+", TokenOperator)
-                -- Stolen from http://stackoverflow.com/a/1016356/130598
-                , (mr "'(\\\\.|[^\'])*'", TokenString)
                 , (mr "[();,]", TokenPunction)
                 , (mr "[ \t\n\r]+", TokenDelete)
-                , (mr "//.*", TokenComment)
                 ]
                 where mr m = makeRegex $ "\\`" ++ m
 
