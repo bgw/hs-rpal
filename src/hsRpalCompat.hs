@@ -16,17 +16,21 @@ optUsageInfo =
             , "    -version:  Shows the version number"
             , "    -l:        Print the raw program to stdout"
             , "    -ast:      Print the Abstract Syntax Tree to stdout"
+            , "    -st:       Print the partially standardized AST to stdout"
+            , "    -fst:      Print the fully standardized AST to stdout"
             , "    -lex:      Print all the tokens to stdout"
             , "    -noout:    Skip evaluation (useful with -ast, -lex, etc)"
             ]
 
 -- Processes arguments prefixed with a dash
 optParseArg :: Opt -> String -> Opt
-optParseArg o "version" = o { optVersion = True }
-optParseArg o "l"       = o { optListing = True }
-optParseArg o "ast"     = o { optAst     = True }
-optParseArg o "lex"     = o { optLex     = True }
-optParseArg o "noout"   = o { optQuiet   = True }
+optParseArg o "version" = o { optVersion   = True }
+optParseArg o "l"       = o { optListing   = True }
+optParseArg o "ast"     = o { optAst       = True }
+optParseArg o "st"      = o { optPartialSt = True }
+optParseArg o "fst"     = o { optFullSt    = True }
+optParseArg o "lex"     = o { optLex       = True }
+optParseArg o "noout"   = o { optQuiet     = True }
 optParseArg _ arg       = error $ "Unrecognized option: '-" ++ arg ++ "'\n"
                                   ++ optUsageInfo
 

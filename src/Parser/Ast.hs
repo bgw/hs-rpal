@@ -1,4 +1,7 @@
-module Parser.Ast ( Ast(..), children ) where
+-- Defines the `Ast` datatype, and all subtypes. The AST is a tree structure,
+-- and can be navigated by calling `children` recursively or via pattern
+-- matching.
+module Parser.Ast ( Ast(..), showName, children ) where
 
 -- Define all the treenodes, grouped as they are in the RPAL grammar. On the
 -- right are the simplified matching types of Ast
@@ -53,7 +56,12 @@ data Ast
     -- Variables
     | AstEmpty                  -- from two TokenOperators, ()
     | AstComma [Ast]            -- identifier list
-    deriving (Eq)
+
+    -- Extras for the standardized tree
+    | AstOp (Ast -> Ast -> Ast) -- aug, or, &, +, -, /, **, gr ...
+    | AstUop (Ast -> Ast)       -- not or neg
+    | AstCondOp                 -- operator form of AstCond
+    | AstYstar                  -- used in recursion, Y-combinator
 
 -- Define `show` for the Ast
 instance Show Ast where
@@ -119,7 +127,13 @@ showName (AstFcnForm _ _ _) = "function_form"
 
 -- Variables
 showName (AstEmpty) = "<()>"
-showName (AstComma _)= ","
+showName (AstComma _) = ","
+
+-- Extras for the standardized tree
+showName (AstOp a) = "<OP:" ++ (showName $ a AstNil AstNil) ++ ">"
+showName (AstUop a) = "<UOP:" ++ (showName $ a AstNil) ++ ">"
+showName (AstCondOp) = "->"
+showName (AstYstar) = "<Y*>"
 
 -- Given the format that our Ast types are in, it isn't easy to iterate over the
 -- children in the tree. This should help with that.
@@ -175,3 +189,9 @@ children (AstFcnForm a b c) = a : b ++ [c]
 -- Variables
 children (AstEmpty) = []
 children (AstComma a) = a
+
+-- Extras for the standardized tree
+children (AstOp _) = []
+children (AstUop _) = []
+children (AstCondOp) = []
+children (AstYstar) = []

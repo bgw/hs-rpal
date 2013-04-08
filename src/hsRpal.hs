@@ -29,6 +29,12 @@ optDescr =
     , Option ['a'] ["ast"]
         (NoArg $ \o -> o { optAst = True })
       "Print the Abstract Syntax Tree to stdout"
+    , Option ['s', 'p'] ["standardize", "partially-standardize"]
+        (NoArg $ \o -> o { optPartialSt = True })
+      "Print the partially standardized AST"
+    , Option ['f'] ["fully-standardize"]
+        (NoArg $ \o -> o { optFullSt = True })
+      "Print the fully standardized AST"
     , Option ['q'] ["no-out", "quiet"]
         (NoArg $ \o -> o { optQuiet = True })
       "Skip program evaluation (useful with --ast, --lex, etc)"
