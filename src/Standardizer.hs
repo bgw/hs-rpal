@@ -96,8 +96,8 @@ standardizeNode level nodeId (AstLambda _ _) nodeChildren =
          / \        /  \
         X   E      X    P
 -}
-standardizeNode level nodeId (AstWhere _ _) [innerExpression, AstDef key value] =
-    AstGamma (commaHelper level nodeId $ AstLambda [key] innerExpression) value
+standardizeNode level nId (AstWhere _ _) [innerExpression, AstDef key value] =
+    AstGamma (commaHelper level nId $ AstLambda [key] innerExpression) value
 
 -- ### Tuple expressions
 
