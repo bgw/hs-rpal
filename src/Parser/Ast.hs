@@ -61,7 +61,8 @@ data Ast
     | AstOp (Ast -> Ast -> Ast) -- aug, or, &, +, -, /, **, gr ...
     | AstUop (Ast -> Ast)       -- not or neg
     | AstCondOp                 -- operator form of AstCond
-    | AstYstar                  -- used in recursion, Y-combinator
+    | AstYstar                  -- used in recursion (Y-combinator)
+    | AstTemp Integer Integer   -- temporary identifier: outer and inner counter
 
 -- Define `show` for the Ast
 instance Show Ast where
@@ -72,6 +73,12 @@ instance Show Ast where
                 lines $ concat $           -- split up each line
                     map show (children a)  -- call recursively
         )
+
+-- Define Eq for identifiers (needed for environment lookups)
+instance Eq Ast where
+    (==) (AstIdentifier a) (AstIdentifier b) = a == b
+    (==) (AstTemp a b)     (AstTemp c d)     = a == c && b == d
+    (==) _ _ = error "Cannot compare non-identifier AST nodes"
 
 -- Our type names are different from those printed by Bermudez's parser, so we
 -- have to convert them (ugh). Also, the example parser prints a space at the
@@ -134,6 +141,7 @@ showName (AstOp a) = "<OP:" ++ (showName $ a AstNil AstNil) ++ ">"
 showName (AstUop a) = "<UOP:" ++ (showName $ a AstNil) ++ ">"
 showName (AstCondOp) = "->"
 showName (AstYstar) = "<Y*>"
+showName (AstTemp a b) = "<TEMP:" ++ (show a) ++ ":" ++ (show b) ++ ">"
 
 -- Given the format that our Ast types are in, it isn't easy to iterate over the
 -- children in the tree. This should help with that.
@@ -195,3 +203,4 @@ children (AstOp _) = []
 children (AstUop _) = []
 children (AstCondOp) = []
 children (AstYstar) = []
+children (AstTemp _ _) = []
