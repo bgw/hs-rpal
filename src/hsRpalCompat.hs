@@ -19,6 +19,7 @@ optUsageInfo =
             , "    -st:       Print the partially standardized AST to stdout"
             , "    -fst:      Print the fully standardized AST to stdout"
             , "    -lex:      Print all the tokens to stdout"
+            , "    -control:  Print all the control structures to stdout"
             , "    -noout:    Skip evaluation (useful with -ast, -lex, etc)"
             ]
 

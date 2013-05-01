@@ -1,1 +1,17 @@
-None that I know of!
+What works:
+- Standardizer (Partial and Full)
+- Control Structure generation
+
+What doesn't:
+- Environment lookup (partially implemented)
+- The primative environment (partially implemented)
+- Recursion
+- The extended CSE machine (only simple is implemented)
+
+Unfortunately it's impossible to see the whole thing in action. It fails on
+every test case. You can however run the standardizer and control-structure
+generator separately with `-st` (partial standardizer), `-fst` (full
+standardizer), and `-control` (control structures, assumes UTF-8 terminal).
+
+Hopefully I can at least be graded on what works...
+

@@ -76,15 +76,16 @@ standardizeNode level nodeId (AstLet _ _) [AstDef key value, expr] =
      /    \           /    \
     V++    E         V     .E
 -}
-standardizeNode _ _ (AstLambda _ _) [argument, expression] =
-    AstLambda [argument] expression
+standardizeNode level nodeId (AstLambda _ _) [argument, expression] =
+    commaHelper level nodeId $ AstLambda [argument] expression
 
 standardizeNode level nodeId (AstLambda _ _) nodeChildren =
     let
         argument = head nodeChildren
         argumentsTail = init $ tail nodeChildren
         expression = last nodeChildren
-    in AstLambda [argument] $
+    in commaHelper level nodeId $
+       AstLambda [argument] $
                  standardizeNode level nodeId
                                  (AstLambda argumentsTail expression)
                                  (argumentsTail ++ [expression])

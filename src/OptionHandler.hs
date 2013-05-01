@@ -16,6 +16,8 @@ import Control.Monad
 import Lexer
 import Parser
 import Standardizer
+import Evaluator
+import Evaluator.Control
 
 -- This auto-updates from the value in cabal! Isn't that cool?
 versionNumber :: String
@@ -30,6 +32,7 @@ data Opt = Opt { optVersion :: Bool
                , optFullSt :: Bool
                , optLex :: Bool
                , optListing :: Bool
+               , optControl :: Bool
                , optQuiet :: Bool
                , optFile :: Maybe String
                }
@@ -42,6 +45,7 @@ optDefaults = Opt { optVersion = False
                   , optFullSt = False
                   , optLex = False
                   , optListing = False
+                  , optControl = False
                   , optQuiet = False
                   , optFile = Nothing
                   }
@@ -59,4 +63,9 @@ optProcess opt = do
         (when (optPartialSt opt) $
             putStr $ show $ standardizePartially $ parse source) >>
         (when (optFullSt opt) $
-            putStr $ show $ standardizeFully $ parse source)
+            putStr $ show $ standardizeFully $ parse source) >>
+        (when (optControl opt) $
+            putStrLn $ show $ generateControl $ standardizeFully
+                     $ parse source) >>
+        (when (not (optQuiet opt)) $
+            evaluateSimple $ generateControl $ standardizeFully $ parse source)

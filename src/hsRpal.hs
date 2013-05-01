@@ -35,6 +35,9 @@ optDescr =
     , Option ['f'] ["fully-standardize"]
         (NoArg $ \o -> o { optFullSt = True })
       "Print the fully standardized AST"
+    , Option ['c'] ["control"]
+        (NoArg $ \o -> o { optControl = True })
+      "Generate and display the control structures for the CSE machine"
     , Option ['q'] ["no-out", "quiet"]
         (NoArg $ \o -> o { optQuiet = True })
       "Skip program evaluation (useful with --ast, --lex, etc)"
