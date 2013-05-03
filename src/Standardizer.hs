@@ -110,12 +110,12 @@ standardizeNode level nId (AstWhere _ _) [innerExpression, AstDef key value] =
               aug  .nil
 -}
 standardizeNode Full _ (AstTau _) [] = AstNil
-standardizeNode Full nodeId (AstTau _) (expression:expressionTail) =
+standardizeNode Full nodeId (AstTau _) expressions =
     AstGamma (AstGamma (AstOp AstAug)
                        (standardizeNode Full nodeId
-                                        (AstTau expressionTail)
-                                        expressionTail))
-             expression
+                                        (AstTau $ init expressions)
+                                        (init expressions)))
+             (last expressions)
 standardizeNode Partial _ (AstTau _) nodeChildren = AstTau nodeChildren
 
 standardizeNode level _ (AstAug _ _) [a, b] = op AstAug level a b
@@ -204,9 +204,9 @@ standardizeNode level nodeId (AstWithin _ _) [AstDef x1 e1, AstDef x2 e2] =
      / \         |   |
     X   E       X++  E++
 -}
-standardizeNode _ _ (AstAnd _) nodeChildren =
+standardizeNode level nodeId (AstAnd _) nodeChildren =
     AstDef (AstComma $ fmap defFst nodeChildren)
-           (AstTau   $ fmap defSnd nodeChildren)
+           (standardizeNode level nodeId (AstTau []) $ fmap defSnd nodeChildren)
     where 
         defFst :: Ast -> Ast
         defFst (AstDef a _) = a

@@ -31,6 +31,7 @@ optParseArg o "ast"     = o { optAst       = True }
 optParseArg o "st"      = o { optPartialSt = True }
 optParseArg o "fst"     = o { optFullSt    = True }
 optParseArg o "lex"     = o { optLex       = True }
+optParseArg o "control" = o { optControl   = True }
 optParseArg o "noout"   = o { optQuiet     = True }
 optParseArg _ arg       = error $ "Unrecognized option: '-" ++ arg ++ "'\n"
                                   ++ optUsageInfo

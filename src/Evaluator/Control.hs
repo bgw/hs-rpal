@@ -35,7 +35,7 @@ instance Show ControlElement where
 
     -- show for ControlStructure
     showList elements =
-        (([unicodeDelta] ++ "0: " ++ showHelper 0 elements []) ++)
+        (([unicodeDelta] ++ "0: " ++ showHelper 0 (reverse elements) []) ++)
         where
             showHelper :: Int -> ControlStructure -> [ControlStructure]
                        -> String
@@ -53,14 +53,14 @@ instance Show ControlElement where
                 "(" ++ [unicodeLambda] ++ " "
                     ++ (show $ i + (length queue) + 1) ++ " "
                     ++ (show $ ControlName argument) ++ ") "
-                    ++ showHelper i el (queue ++ [next])
+                    ++ showHelper i el (queue ++ [reverse next])
             showHelper i ((ControlName name):el) queue =
                 (show $ ControlName name) ++ " " ++ showHelper i el queue
             showHelper _ _ _ = error "Error showing ControlStructure"
 
 -- Generate the (recursively nested) control structure for the program
 generate :: Ast -> ControlStructure
-generate (AstGamma a b) = ControlGamma : (generate a) ++ (generate b)
+generate (AstGamma a b) = (generate b) ++ (generate a) ++ [ControlGamma]
 generate (AstLambda [a] b) = [ControlLambda a (generate b)]
 -- All the simple ControlName types
 generate (AstIdentifier a  ) = [ControlName $ AstIdentifier a  ]

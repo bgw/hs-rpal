@@ -1,17 +1,15 @@
 What works:
 - Standardizer (Partial and Full)
 - Control Structure generation
+- The entire primitive environment (as far as I can tell)
+- Environment lookup (as far as I can tell)
 
 What doesn't:
-- Environment lookup (partially implemented)
-- The primative environment (partially implemented)
 - Recursion
-- The extended CSE machine (only simple is implemented)
+- Passing lambdas as arguments to other lambdas
+  (it's a tricky type issue with Haskell)
 
-Unfortunately it's impossible to see the whole thing in action. It fails on
-every test case. You can however run the standardizer and control-structure
-generator separately with `-st` (partial standardizer), `-fst` (full
-standardizer), and `-control` (control structures, assumes UTF-8 terminal).
-
-Hopefully I can at least be graded on what works...
-
+The program fails on all but 15 of the test cases. You can run the standardizer
+and control-structure generator separately with `-st` (partial standardizer),
+`-fst` (full standardizer), and `-control` (control structures, assumes UTF-8
+terminal).

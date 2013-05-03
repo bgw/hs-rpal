@@ -6,8 +6,7 @@ import Parser.Ast
 
 data Environment = EnvironmentPrimative
                  | Environment Ast Ast Environment
-
-type Env = Environment
+                 deriving Show
 
 environmentLookup :: Environment -> Ast -> Ast
 -- Passthrough types
@@ -19,7 +18,10 @@ environmentLookup _ AstNil = AstNil
 environmentLookup _ AstDummy = AstDummy
 environmentLookup _ AstEmpty = AstEmpty
 
--- Recursive identifier lookup
+-- Operations can only ever be defined in the primative environment
+environmentLookup (Environment _ _ _) (AstOp query) =
+    primativeLookup (AstOp query)
+
 environmentLookup (Environment (AstIdentifier key) value next)
                   (AstIdentifier query) =
     if query == key then
@@ -27,32 +29,133 @@ environmentLookup (Environment (AstIdentifier key) value next)
     else
         environmentLookup next (AstIdentifier query)
 
-environmentLookup (EnvironmentPrimative) key = primativeLookup key
-environmentLookup _ _ = error "lookups not yet implemented"
+environmentLookup (Environment (AstTemp keyA keyB) value next)
+                  (AstTemp queryA queryB) =
+    if keyA == queryA && keyB == queryB then
+        value
+    else
+        environmentLookup next (AstTemp queryA queryB)
+
+-- Not found, go to the next environment
+environmentLookup (Environment _ _ next) query =
+    environmentLookup next query
+
+-- Fell down to the primative environment
+environmentLookup EnvironmentPrimative key = primativeLookup key
 
 primativeLookup :: Ast -> Ast
 -- Operations
 primativeLookup (AstOp  a) = primativeOpLookup  $ a AstDummy AstDummy
 primativeLookup (AstUop a) = primativeUopLookup $ a AstDummy
+primativeLookup AstCondOp  =
+    AstEvaluatable $ \a ->
+        return $ AstEvaluatable $ \b ->
+            return $ AstEvaluatable $ f a b
+    where
+        f AstTrue  (AstEvaluatable a) _ = a AstEmpty
+        f AstFalse _ (AstEvaluatable a) = a AstEmpty
+        f _ _ _ = error "Cond was passed non-boolean"
 
 -- Functions
 primativeLookup (AstIdentifier "Print") =
     AstEvaluatable $ \a -> (putStr $ f a) >> (return AstDummy)
     where
-        f (AstString  a) = a
+        f (AstString  a) = init $ tail a
         f (AstInteger a) = show a
         f (AstTrue     ) = "true"
         f (AstFalse    ) = "false"
         f (AstNil      ) = "nil"
         f (AstTau     a) = "(" ++ (concat $ intersperse ", " $ fmap f a) ++ ")"
         f a = error $ "Can't print node:\n" ++ (show a)
+
+primativeLookup AstYstar = AstYstar
+
 primativeLookup (AstIdentifier "print") =
     primativeLookup $ AstIdentifier "Print"
 
+primativeLookup (AstIdentifier "Istuple") =
+    AstEvaluatable f
+    where
+        f (AstTau _) = return AstTrue
+        f AstNil     = return AstTrue
+        f _          = return AstFalse
+
+primativeLookup (AstIdentifier "Isfunction") =
+    AstEvaluatable f
+    where
+        f (AstLambda _ _) = return AstTrue
+        f _               = return AstFalse
+
+primativeLookup (AstIdentifier "Isdummy") =
+    AstEvaluatable f
+    where
+        f AstDummy = return AstTrue
+        f _        = return AstFalse
+
+primativeLookup (AstIdentifier "Isstring") =
+    AstEvaluatable f
+    where
+        f (AstString _) = return AstTrue
+        f _             = return AstFalse
+
+primativeLookup (AstIdentifier "Isinteger") =
+    AstEvaluatable f
+    where
+        f (AstInteger _) = return AstTrue
+        f _              = return AstFalse
+
+primativeLookup (AstIdentifier "Istruthvalue") =
+    AstEvaluatable f
+    where
+        f AstTrue  = return AstTrue
+        f AstFalse = return AstTrue
+        f _        = return AstFalse
+
+primativeLookup (AstIdentifier "Conc") =
+    AstEvaluatable $ \a -> return $ AstEvaluatable $ f a
+    where
+        f (AstString a) (AstString b) = return $ AstString $ a ++ b
+        f _ _                         = error "non-string value passed to Conc"
+
+primativeLookup (AstIdentifier "conc") =
+    primativeLookup $ AstIdentifier "Conc"
+
+primativeLookup (AstIdentifier "ItoS") =
+    AstEvaluatable f
+    where
+        f (AstInteger a) = return $ AstString $ show a
+        f _              = error "non-integer value passed to ItoS"
+
+primativeLookup (AstIdentifier "Order") =
+    AstEvaluatable f
+    where
+        f (AstTau a) = return $ AstInteger $ toInteger $ length a
+        f AstNil     = return $ AstInteger 0
+        f _          = error "non-tuple value passed to Order"
+
+primativeLookup (AstIdentifier "Stem") =
+    AstEvaluatable f
+    where
+        f (AstTau    (a:_))     = return $ a
+        f (AstString (_:a:_:_)) = return $ AstString ['\'', a, '\'']
+        f _ = error "Stem requires a tuple of order 1 or more"
+
+primativeLookup (AstIdentifier "Stern") =
+    AstEvaluatable f
+    where
+        f (AstTau    (_:b))   = return $ AstTau b
+        f (AstString (_:_:b)) = return $ AstString $ "'" ++ (init b) ++ "'"
+        f _ = error "Stern requires a tuple of order 1 or more"
+
+primativeLookup (AstIdentifier "Null") =
+    AstEvaluatable f
+    where
+        f (AstTau []) = return AstTrue
+        f AstNil      = return AstTrue
+        f _           = return AstFalse
+
 -- Error case
 primativeLookup key = error $ "Could not find:\n" ++ (show key)
-
-
 
 -- Operation helper functions
 primativeIntOp :: (Integer -> Integer -> Integer) -> Ast
@@ -118,6 +221,12 @@ primativeOpLookup  (AstEq _ _)    = primativeIntBoolOp (==)
 primativeOpLookup  (AstNe _ _)    = primativeIntBoolOp (/=)
 primativeOpLookup  (AstOr  _ _)   = primativeBoolOp (||)
 primativeOpLookup  (AstAmp _ _)   = primativeBoolOp (&&)
+primativeOpLookup  (AstAug _ _)   =
+    AstEvaluatable (\a -> return $ AstEvaluatable $ f a)
+    where
+        f (AstTau a) b = return $ AstTau $ a ++ [b]
+        f AstNil     b = return $ AstTau [b]
+        f _          _ = error "aug called with non-tuple type"
 primativeOpLookup  _ = error "Unknown binary operation"
 
 primativeUopLookup :: Ast -> Ast
